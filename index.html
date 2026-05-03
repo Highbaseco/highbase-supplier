@@ -1333,7 +1333,7 @@ function applyVoiceUpdates(i, result) {
     updatedFields.push('product_name');
   }
 
-  // Handle color
+  // Handle color - AI can detect and extract color
   if (result.color && String(result.color).trim() !== '') {
     products[i].color = result.color;
     const input = document.getElementById(`color-${i}`);
