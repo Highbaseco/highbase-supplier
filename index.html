@@ -11,24 +11,20 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  /* Highbase brand palette */
   --bg:           #FFFFFF;
   --surface:      #F4F7FB;
   --surface-2:    #EAF1F8;
   --card:         #FFFFFF;
   --border:       #E2E8F0;
   --border-soft:  #EDF2F7;
-
   --primary:      #1E5BB8;
   --primary-dk:   #164A99;
   --primary-lt:   #E8F0FB;
   --primary-soft: #DCE9F8;
-
   --ink:          #0F1E36;
   --ink-2:        #2D3E5C;
   --ink-3:        #5A6B85;
   --ink-4:        #94A3B8;
-
   --accent:       #1E5BB8;
   --success:      #16A34A;
   --success-lt:   #DCFCE7;
@@ -36,16 +32,13 @@
   --warning-lt:   #FEF3C7;
   --danger:       #DC2626;
   --danger-lt:    #FEE2E2;
-
   --shadow-sm:    0 1px 2px rgba(15, 30, 54, .04);
   --shadow:       0 4px 16px rgba(15, 30, 54, .06), 0 1px 2px rgba(15, 30, 54, .04);
   --shadow-lg:    0 12px 32px rgba(15, 30, 54, .10), 0 1px 2px rgba(15, 30, 54, .04);
   --shadow-blue:  0 8px 24px rgba(30, 91, 184, .25);
-
   --r:            14px;
   --r-sm:         10px;
   --r-pill:       999px;
-
   --font-body:    'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-display: 'Manrope', 'Inter', sans-serif;
 }
@@ -95,7 +88,7 @@ header {
   background: var(--primary-lt);
   padding: 6px 14px; border-radius: var(--r-pill);
   display: flex; align-items: center; gap: 6px;
-  white-space: nowrap;
+  whitespace: nowrap;
   flex-shrink: 0;
 }
 .product-count::before {
@@ -343,7 +336,7 @@ header {
   text-transform: uppercase; letter-spacing: .07em;
   color: var(--ink-3);
 }
-.field input {
+.field input, .field select {
   font-family: var(--font-body);
   font-size: 14px; font-weight: 500;
   color: var(--ink);
@@ -354,17 +347,38 @@ header {
   width: 100%; outline: none;
   transition: border-color .15s, box-shadow .15s, background .15s;
 }
+.field select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%235A6B85' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
 .field input::placeholder { color: var(--ink-4); font-weight: 400; }
-.field input:hover { border-color: var(--primary-soft); }
-.field input:focus {
+.field input:hover, .field select:hover { border-color: var(--primary-soft); }
+.field input:focus, .field select:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(30, 91, 184, .12);
 }
-.field input.changed {
+.field input.changed, .field select.changed {
   border-color: var(--primary);
   background: var(--primary-lt);
 }
-.product-card.confirmed .field input {
+.field input.invalid {
+  border-color: var(--danger);
+  background: var(--danger-lt);
+}
+.field-error {
+  font-size: 11px;
+  color: var(--danger);
+  margin-top: -2px;
+  display: none;
+}
+.field input.invalid + .field-error {
+  display: block;
+}
+.product-card.confirmed .field input, .product-card.confirmed .field select {
   background: var(--surface);
   pointer-events: none;
   color: var(--ink-3);
@@ -507,7 +521,7 @@ header {
 }
 .rec-stop-btn:hover { background: #B91C1C; }
 
-/* AI hint banner — shows what was transcribed */
+/* AI hint banner */
 .ai-hint {
   display: none;
   margin: 0 18px 14px;
@@ -677,7 +691,6 @@ header {
 </head>
 <body>
 
-<!-- Header -->
 <header>
   <div class="header-inner">
     <div class="logo">
@@ -688,16 +701,13 @@ header {
   </div>
 </header>
 
-<!-- Toast -->
 <div id="toast"></div>
 
-<!-- Loading -->
 <div id="loadingScreen">
   <div class="loader"></div>
   <p>Loading your products...</p>
 </div>
 
-<!-- Error -->
 <div id="errorScreen">
   <div class="state-icon error-icon">
     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r=".5" fill="#DC2626"/></svg>
@@ -706,7 +716,6 @@ header {
   <p id="errorMsg">Could not load your products. Please try again.</p>
 </div>
 
-<!-- Empty -->
 <div id="emptyScreen">
   <div class="state-icon empty-icon">
     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
@@ -715,7 +724,6 @@ header {
   <p>No submissions found yet. Send your products via WhatsApp first.</p>
 </div>
 
-<!-- Success -->
 <div id="successScreen">
   <div class="state-icon success-icon-big">
     <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -725,7 +733,6 @@ header {
   <div class="success-list" id="successList"></div>
 </div>
 
-<!-- Main -->
 <div id="mainContent" style="display:none;">
   <div class="progress-wrap">
     <div class="progress-card">
@@ -747,7 +754,6 @@ header {
   <div class="cards-wrap" id="cardsList"></div>
 </div>
 
-<!-- Bottom bar -->
 <div class="bottom-bar" id="bottomBar" style="display:none;">
   <div class="bottom-inner">
     <div class="bottom-info">
@@ -766,6 +772,10 @@ header {
 const WEBHOOK_GET   = 'https://n8n.srv1587311.hstgr.cloud/webhook/review-data';
 const WEBHOOK_POST  = 'https://n8n.srv1587311.hstgr.cloud/webhook/review-confirm';
 const WEBHOOK_VOICE = 'https://n8n.srv1587311.hstgr.cloud/webhook/voice-update';
+
+// ── VALIDATION LISTS ──────────────────────────────────────────────────────
+const UNITS = ['kg', 'g', 'lb', 'L', 'ml', 'pcs', 'piece', 'eggs', 'pack', 'box', 'carton'];
+const COUNTRIES = ['Egypt', 'India', 'Saudi Arabia', 'UAE', 'Turkey', 'Mexico', 'Jordan', 'Morocco', 'Spain', 'Kuwait', 'Bahrain', 'Oman', 'Qatar', 'Iran', 'Pakistan', 'Indonesia', 'USA', 'Netherlands', 'Peru', 'Chile', 'Brazil', 'China', 'Thailand', 'Vietnam', 'Philippines', 'Lebanon', 'Syria', 'Iraq', 'Yemen', 'Palestine', 'Tunisia', 'Algeria', 'Libya', 'Sudan', 'Somalia', 'Kenya', 'Tanzania', 'Uganda', 'Ethiopia', 'South Africa', 'Nigeria', 'Ghana', 'Ivory Coast', 'Senegal', 'Mali', 'Cameroon', 'Zimbabwe', 'Australia', 'New Zealand', 'Japan', 'South Korea', 'Malaysia', 'Singapore', 'Sri Lanka', 'Bangladesh', 'Nepal', 'Afghanistan', 'Kazakhstan', 'Uzbekistan', 'Turkmenistan', 'Azerbaijan', 'Armenia', 'Georgia', 'Russia', 'Ukraine', 'Poland', 'Germany', 'France', 'Italy', 'UK', 'Ireland', 'Portugal', 'Greece', 'Cyprus', 'Malta', 'Belgium', 'Netherlands', 'Switzerland', 'Austria', 'Sweden', 'Norway', 'Denmark', 'Finland', 'Iceland', 'Canada', 'Argentina', 'Colombia', 'Ecuador', 'Venezuela', 'Bolivia', 'Paraguay', 'Uruguay', 'Costa Rica', 'Panama', 'Guatemala', 'Honduras', 'Nicaragua', 'El Salvador', 'Dominican Republic', 'Haiti', 'Jamaica', 'Cuba', 'Puerto Rico'];
 
 // ── State ─────────────────────────────────────────────────────────────────
 let products  = [];
@@ -788,14 +798,11 @@ async function loadProducts() {
     const rows = Array.isArray(data) ? data : [data];
     products   = rows.filter(r => r && r.product_name);
 
-    // Debug: log to screen for mobile debugging
-    console.log('Loaded products:', products.length, products);
-
-    // Clean newlines that sometimes come from Google Sheets
     products.forEach(p => {
       if (p.product_name) p.product_name = String(p.product_name).replace(/\n/g, '').trim();
       if (p.size)         p.size         = String(p.size).replace(/\n/g, '').trim();
       if (p.Origin)       p.Origin       = String(p.Origin).replace(/\n/g, '').trim();
+      if (p.color)        p.color        = String(p.color).replace(/\n/g, '').trim();
     });
 
     hide('loadingScreen');
@@ -808,7 +815,6 @@ async function loadProducts() {
     show('mainContent');
     show('bottomBar');
 
-    // Wait a tick for DOM to be visible before rendering cards
     setTimeout(() => {
       renderCards();
       updateProgress();
@@ -820,10 +826,9 @@ async function loadProducts() {
   }
 }
 
-// ── Convert Google Drive URLs to viewable format ──────────────────────────
+// ── Convert Google Drive URLs ─────────────────────────────────────────────
 function fixImageUrl(url) {
   if (!url) return '';
-  // Convert various Google Drive URL formats to direct image URL
   const fileMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
   if (fileMatch) return `https://drive.google.com/thumbnail?id=${fileMatch[1]}&sz=w400`;
   const ucMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
@@ -855,6 +860,16 @@ function makeCard(p, i) {
     : '';
   const fbStyle   = safeImage ? 'style="display:none"' : '';
 
+  // Build unit options
+  const unitOptions = UNITS.map(u => 
+    `<option value="${u}" ${p.size && p.size.includes(u) ? 'selected' : ''}>${u}</option>`
+  ).join('');
+
+  // Build country options
+  const countryOptions = COUNTRIES.map(c => 
+    `<option value="${c}" ${p.Origin === c ? 'selected' : ''}>${c}</option>`
+  ).join('');
+
   card.innerHTML = `
     <div class="card-top">
       <div class="image-section">
@@ -878,9 +893,10 @@ function makeCard(p, i) {
           <div class="card-name" id="cname-${i}">${esc(p.product_name)}</div>
         </div>
         <div class="card-summary" id="csum-${i}">
-          ${p.size ? `<span class="summary-chip"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>${esc(p.size)}</span>` : ''}
-          ${p.price ? `<span class="summary-chip"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>${esc(p.price)} BD</span>` : ''}
-          ${p.Origin ? `<span class="summary-chip"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>${esc(p.Origin)}</span>` : ''}
+          ${p.color ? `<span class="summary-chip">${esc(p.color)}</span>` : ''}
+          ${p.size ? `<span class="summary-chip">${esc(p.size)}</span>` : ''}
+          ${p.price ? `<span class="summary-chip">${esc(p.price)} BD</span>` : ''}
+          ${p.Origin ? `<span class="summary-chip">${esc(p.Origin)}</span>` : ''}
         </div>
         <div class="confirmed-tag">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -892,23 +908,44 @@ function makeCard(p, i) {
     <div class="card-fields">
       <div class="field field-full">
         <label>Product name</label>
-        <input type="text" value="${esc(p.product_name||'')}"
-          oninput="markChanged(this);products[${i}].product_name=this.value;document.getElementById('cname-${i}').textContent=this.value">
+        <input type="text" value="${esc(p.product_name||'')}" id="pname-${i}"
+          oninput="markChanged(this);products[${i}].product_name=this.value;document.getElementById('cname-${i}').textContent=this.value;updateSummary(${i})">
       </div>
+      
       <div class="field">
-        <label>Size</label>
-        <input type="text" value="${esc(p.size||'')}" placeholder="e.g. 5 kg"
-          oninput="markChanged(this);products[${i}].size=this.value;updateSummary(${i})">
+        <label>Color (optional)</label>
+        <input type="text" value="${esc(p.color||'')}" id="color-${i}" placeholder="e.g. Red, Black"
+          oninput="markChanged(this);products[${i}].color=this.value;updateSummary(${i})">
       </div>
+      
+      <div class="field">
+        <label>Size (number only)</label>
+        <input type="text" value="${esc(extractNumber(p.size)||'')}" id="size-${i}" placeholder="e.g. 10"
+          oninput="validateNumber(this, ${i}, 'size');markChanged(this);products[${i}].sizeNum=this.value;updateSummary(${i})">
+        <span class="field-error">Please enter numbers only</span>
+      </div>
+      
+      <div class="field">
+        <label>Unit</label>
+        <select id="unit-${i}" onchange="markChanged(this);products[${i}].sizeUnit=this.value;updateSummary(${i})">
+          <option value="">Select unit</option>
+          ${unitOptions}
+        </select>
+      </div>
+      
       <div class="field">
         <label>Price (BD)</label>
-        <input type="text" value="${esc(p.price||'')}" placeholder="e.g. 3.500"
-          oninput="markChanged(this);products[${i}].price=this.value;updateSummary(${i})">
+        <input type="text" value="${esc(p.price||'')}" id="price-${i}" placeholder="e.g. 5.000"
+          oninput="validatePrice(this, ${i});markChanged(this);products[${i}].price=this.value;updateSummary(${i})">
+        <span class="field-error">Please enter a valid price (numbers and . only)</span>
       </div>
+      
       <div class="field field-full">
         <label>Origin country</label>
-        <input type="text" value="${esc(p.Origin||'')}" placeholder="e.g. Egypt"
-          oninput="markChanged(this);products[${i}].Origin=this.value;updateSummary(${i})">
+        <select id="origin-${i}" onchange="markChanged(this);products[${i}].Origin=this.value;updateSummary(${i})">
+          <option value="">Select country</option>
+          ${countryOptions}
+        </select>
       </div>
     </div>
 
@@ -951,19 +988,52 @@ function makeCard(p, i) {
   return card;
 }
 
-function markChanged(input) { input.classList.add('changed'); }
+// ── Helper: extract number from size string ───────────────────────────────
+function extractNumber(str) {
+  if (!str) return '';
+  const match = String(str).match(/[\d.]+/);
+  return match ? match[0] : '';
+}
 
-// Live update the summary chips when fields change
+// ── Validation ────────────────────────────────────────────────────────────
+function validateNumber(input, i, field) {
+  const val = input.value.trim();
+  // Allow digits and single decimal point
+  if (val && !/^[\d.]+$/.test(val)) {
+    input.classList.add('invalid');
+  } else {
+    input.classList.remove('invalid');
+  }
+}
+
+function validatePrice(input, i) {
+  const val = input.value.trim();
+  // Allow digits, decimal point, and optional BD suffix
+  if (val && !/^[\d.]+(\s*(bd|BD|bhd|BHD))?$/.test(val)) {
+    input.classList.add('invalid');
+  } else {
+    input.classList.remove('invalid');
+  }
+}
+
+function markChanged(el) { el.classList.add('changed'); }
+
+// ── Live update summary chips ─────────────────────────────────────────────
 function updateSummary(i) {
   const p = products[i];
+  const sizeNum = document.getElementById(`size-${i}`).value;
+  const sizeUnit = document.getElementById(`unit-${i}`).value;
+  const fullSize = sizeNum && sizeUnit ? `${sizeNum} ${sizeUnit}` : (sizeNum || '');
+  
   document.getElementById(`csum-${i}`).innerHTML = `
-    ${p.size ? `<span class="summary-chip">${esc(p.size)}</span>` : ''}
+    ${p.color ? `<span class="summary-chip">${esc(p.color)}</span>` : ''}
+    ${fullSize ? `<span class="summary-chip">${esc(fullSize)}</span>` : ''}
     ${p.price ? `<span class="summary-chip">${esc(p.price)} BD</span>` : ''}
     ${p.Origin ? `<span class="summary-chip">${esc(p.Origin)}</span>` : ''}
   `;
 }
 
-// ── Image change handler (preview only, upload happens via WhatsApp later) ─
+// ── Image change ──────────────────────────────────────────────────────────
 function handleImageChange(event, i) {
   if (confirmed.has(i)) {
     showToast('Product already confirmed', 'info');
@@ -989,22 +1059,27 @@ function handleImageChange(event, i) {
 
 // ── Confirm single ────────────────────────────────────────────────────────
 async function confirmProduct(i) {
-  // If currently recording on this card, stop and let voice processing finish first
+  // Check for validation errors
+  const card = document.getElementById(`card-${i}`);
+  const invalidInputs = card.querySelectorAll('input.invalid');
+  if (invalidInputs.length > 0) {
+    showToast('Please fix validation errors first', 'error');
+    return;
+  }
+
+  // If currently recording, stop first
   if (recordingFor === i) {
     showToast('Stopping recording first, please wait…', 'info');
     stopRecording(i);
-    // Wait for the voice update to finish (sendVoiceUpdate clears recordingFor)
     let waited = 0;
     while (recordingFor !== null && waited < 15000) {
       await new Promise(r => setTimeout(r, 200));
       waited += 200;
     }
-    // Don't auto-confirm — let the user review the AI-updated values first
     showToast('Review the updated values, then tap Confirm again', 'info');
     return;
   }
 
-  // If recording on another card, ask user to finish that first
   if (recordingFor !== null) {
     showToast('Finish the other recording first', 'error');
     return;
@@ -1014,16 +1089,29 @@ async function confirmProduct(i) {
   btn.classList.add('loading'); btn.disabled = true;
 
   try {
-    const p   = products[i];
+    const p = products[i];
+    
+    // Build size from number + unit
+    const sizeNum = document.getElementById(`size-${i}`).value;
+    const sizeUnit = document.getElementById(`unit-${i}`).value;
+    const fullSize = sizeNum && sizeUnit ? `${sizeNum} ${sizeUnit}` : sizeNum;
+    
     const res = await fetch(WEBHOOK_POST, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({
-        chat_id: chatId, row_number: p.row_number,
-        product_name: p.product_name, size: p.size,
-        price: p.price, Origin: p.Origin, image: p.image,
-        variant_en: p.variant_en, variant_ar: p.variant_ar,
-        Pack: p.Pack, Box: p.Box,
+        chat_id: chatId,
+        row_number: p.row_number,
+        product_name: p.product_name,
+        color: p.color || '',
+        size: fullSize,
+        price: p.price,
+        Origin: p.Origin,
+        image: p.image,
+        variant_en: p.variant_en,
+        variant_ar: p.variant_ar,
+        Pack: p.Pack,
+        Box: p.Box,
         confirmed_at: new Date().toISOString(),
       }),
     });
@@ -1073,28 +1161,32 @@ function updateProgress() {
 // ── All done ──────────────────────────────────────────────────────────────
 function showAllConfirmed() {
   hide('mainContent'); hide('bottomBar');
-  document.getElementById('successList').innerHTML = products.map(p => `
+  document.getElementById('successList').innerHTML = products.map(p => {
+    const sizeNum = document.getElementById(`size-${products.indexOf(p)}`).value;
+    const sizeUnit = document.getElementById(`unit-${products.indexOf(p)}`).value;
+    const fullSize = sizeNum && sizeUnit ? `${sizeNum} ${sizeUnit}` : sizeNum;
+    
+    return `
     <div class="success-row">
       <div class="success-row-left">
         <div class="success-row-name">${esc(p.product_name)}</div>
-        <div class="success-row-detail">${esc(p.size||'')} ${p.price?'· '+esc(p.price)+' BD':''} ${p.Origin?'· '+esc(p.Origin):''}</div>
+        <div class="success-row-detail">${fullSize?esc(fullSize):''} ${p.price?'· '+esc(p.price)+' BD':''} ${p.Origin?'· '+esc(p.Origin):''}</div>
       </div>
       <div class="success-check">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
-    </div>`).join('');
+    </div>`
+  }).join('');
   show('successScreen');
 }
 
-// ── Utils ─────────────────────────────────────────────────────────────────
-// ── Voice recording state ─────────────────────────────────────────────────
+// ── Voice recording ───────────────────────────────────────────────────────
 let mediaRecorder = null;
 let audioChunks   = [];
-let recordingFor  = null;     // index of card being recorded
+let recordingFor  = null;
 let recordingStart = 0;
 let timerInterval = null;
 
-// ── Toggle recording (start/stop) ─────────────────────────────────────────
 async function toggleRecording(i) {
   if (confirmed.has(i)) {
     showToast('Product already confirmed', 'info');
@@ -1111,12 +1203,10 @@ async function toggleRecording(i) {
   await startRecording(i);
 }
 
-// ── Start recording ───────────────────────────────────────────────────────
 async function startRecording(i) {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-    // Pick the best supported format for this browser
     let mimeType = '';
     if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) mimeType = 'audio/webm;codecs=opus';
     else if (MediaRecorder.isTypeSupported('audio/webm'))         mimeType = 'audio/webm';
@@ -1136,19 +1226,16 @@ async function startRecording(i) {
     recordingFor   = i;
     recordingStart = Date.now();
 
-    // UI
     document.getElementById(`mic-${i}`).classList.add('recording');
     document.getElementById(`rec-${i}`).classList.add('show');
     document.getElementById(`hint-${i}`).classList.remove('show');
 
-    // Live timer
     timerInterval = setInterval(() => {
       const elapsed = Math.floor((Date.now() - recordingStart) / 1000);
       const m = Math.floor(elapsed / 60);
       const s = (elapsed % 60).toString().padStart(2, '0');
       document.getElementById(`rec-timer-${i}`).textContent = `${m}:${s}`;
 
-      // Auto-stop at 30 seconds
       if (elapsed >= 30) stopRecording(i);
     }, 200);
 
@@ -1162,7 +1249,6 @@ async function startRecording(i) {
   }
 }
 
-// ── Stop recording ────────────────────────────────────────────────────────
 function stopRecording(i) {
   if (!mediaRecorder || mediaRecorder.state === 'inactive') return;
   mediaRecorder.stop();
@@ -1173,12 +1259,10 @@ function stopRecording(i) {
   document.getElementById(`rec-${i}`).classList.remove('show');
 }
 
-// ── Send to n8n voice webhook ─────────────────────────────────────────────
 async function sendVoiceUpdate(i, audioBlob) {
   try {
     const p = products[i];
 
-    // Convert audio to base64 (simpler than FormData for n8n)
     const base64 = await blobToBase64(audioBlob);
 
     const res = await fetch(WEBHOOK_VOICE, {
@@ -1191,6 +1275,7 @@ async function sendVoiceUpdate(i, audioBlob) {
         audio_mime:   audioBlob.type,
         current: {
           product_name: p.product_name || '',
+          color:        p.color        || '',
           size:         p.size         || '',
           price:        p.price        || '',
           Origin:       p.Origin       || '',
@@ -1201,7 +1286,6 @@ async function sendVoiceUpdate(i, audioBlob) {
     if (!res.ok) throw new Error(res.status);
     const result = await res.json();
 
-    // Apply updates to the card
     applyVoiceUpdates(i, result);
 
   } catch (err) {
@@ -1214,32 +1298,38 @@ async function sendVoiceUpdate(i, audioBlob) {
   }
 }
 
-// ── Apply AI updates to the card fields ───────────────────────────────────
 function applyVoiceUpdates(i, result) {
   const card = document.getElementById(`card-${i}`);
-  const fields = ['product_name', 'size', 'price', 'Origin'];
+  const fields = ['product_name', 'color', 'size', 'price', 'Origin'];
   let updatedFields = [];
 
   fields.forEach(field => {
     const newVal = result[field];
     if (newVal && String(newVal).trim() !== '') {
-      // Update state
       products[i][field] = newVal;
-      // Update input
-      const input = card.querySelector(`input[oninput*="${field}"]`);
-      if (input) {
-        input.value = newVal;
-        input.classList.add('ai-updated', 'changed');
+      
+      if (field === 'size') {
+        // Split size into number + unit
+        const num = extractNumber(newVal);
+        const input = document.getElementById(`size-${i}`);
+        if (input) {
+          input.value = num;
+          input.classList.add('ai-updated', 'changed');
+        }
+      } else {
+        const input = document.getElementById(`${field === 'product_name' ? 'pname' : field}-${i}`);
+        if (input) {
+          input.value = newVal;
+          input.classList.add('ai-updated', 'changed');
+        }
       }
       updatedFields.push(field);
     }
   });
 
-  // Update title and summary
   document.getElementById(`cname-${i}`).textContent = products[i].product_name || 'New product';
   updateSummary(i);
 
-  // Show what AI heard
   if (result.transcript) {
     document.getElementById(`hint-text-${i}`).textContent = `"${result.transcript}"`;
     document.getElementById(`hint-${i}`).classList.add('show');
@@ -1252,11 +1342,10 @@ function applyVoiceUpdates(i, result) {
   }
 }
 
-// ── Helper: blob → base64 ─────────────────────────────────────────────────
 function blobToBase64(blob) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result.split(',')[1]);  // strip data:...;base64,
+    reader.onloadend = () => resolve(reader.result.split(',')[1]);
     reader.onerror   = reject;
     reader.readAsDataURL(blob);
   });
@@ -1265,7 +1354,6 @@ function blobToBase64(blob) {
 // ── Utils ─────────────────────────────────────────────────────────────────
 function show(id) {
   const el = document.getElementById(id);
-  // Use block for content containers, flex for centered state screens
   const useBlock = ['mainContent'].includes(id);
   el.style.display = useBlock ? 'block' : 'flex';
 }
@@ -1277,7 +1365,7 @@ let tt;
 function showToast(msg, type='info') {
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.className = `toast ${type} show`;
+  t.className = `show ${type}`;
   clearTimeout(tt);
   tt = setTimeout(() => t.classList.remove('show'), 3000);
 }
