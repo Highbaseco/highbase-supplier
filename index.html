@@ -238,6 +238,11 @@ header {
   border: 1px solid var(--border-soft);
   display: inline-flex; align-items: center; gap: 4px;
 }
+/* type chip gets a distinct teal tint so it stands out */
+.summary-chip.type-chip {
+  background: #EEF9F6; color: #0D7A5F;
+  border-color: #C0E8DF;
+}
 
 .confirmed-tag {
   display: none; align-items: center; gap: 6px;
@@ -552,8 +557,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
   chatId   = params.get('chat_id');
   branchId = params.get('branch_id');
-  if (!chatId)    { showError('No supplier ID found. Please ask Highbase to resend the link.'); return; }
-  if (!branchId)  { showError('No supplier Branch ID found. Please ask Highbase to resend the link.'); return; }
+  if (!chatId)   { showError('No supplier ID found. Please ask Highbase to resend the link.'); return; }
+  if (!branchId) { showError('No supplier Branch ID found. Please ask Highbase to resend the link.'); return; }
   loadProducts();
 });
 
@@ -565,7 +570,6 @@ async function loadProducts() {
     const rows = Array.isArray(data) ? data : [data];
 
     products = rows.filter(r => r && (r['Product Name'] || r.product_name)).map(r => {
-      // Handle both old format (size = "10 kg") and new format (size + size_unit separate)
       const rawSize     = r.size || '';
       const rawSizeUnit = r.size_unit || '';
 
@@ -573,47 +577,45 @@ async function loadProducts() {
       let sizeUnit = '';
 
       if (rawSizeUnit) {
-        // New format: size is numeric, size_unit is separate
         sizeNum  = rawSize;
         sizeUnit = rawSizeUnit;
       } else if (rawSize) {
-        // Old format: "10 kg" — split them
         const match = String(rawSize).match(/^([\d.]+)\s*(.*)$/);
         sizeNum  = match ? match[1] : rawSize;
         sizeUnit = match ? match[2].trim() : '';
       }
 
       return {
-        Date:         r.Date || '',
-        Chat_ID:      r.Chat_ID || '',
-        Chat_Number:  r.Chat_Number || '',
-        brand_id:     r.brand_id || r.barnd_id || '',
-        Brand:        r.Brand || '',
+        Date:          r.Date || '',
+        Chat_ID:       r.Chat_ID || '',
+        Chat_Number:   r.Chat_Number || '',
+        brand_id:      r.brand_id || r.barnd_id || '',
+        Brand:         r.Brand || '',
         product_group: r['product group'] || '',
-        product_name: r['Product Name'] || r.product_name || '',
-        type:         r.type || '',
-        color:        r.Color || r.color || '',
-        size:         sizeNum,
-        size_unit:    sizeUnit,
-        Origin:       r.Origin || '',
-        pack_format:  r['Pack Formate'] || r.pack_format || '',
-        variant_name: r['variant name'] || r.variant_en || '',
-        image:        r['image url'] || r.image || '',
-        Category:     r.Category || '',
-        Pack:         r.Pack || 1,
-        Box:          r.Box || 1,
-        price:        r.price || '',
-        price_unit:   r.price_unit || 'BD',
-        row_number:   r.row_number || r.ID || ''
+        product_name:  r['Product Name'] || r.product_name || '',
+        // ── CHANGE 1: read type from incoming data ──
+        type:          r.type || '',
+        color:         r.Color || r.color || '',
+        size:          sizeNum,
+        size_unit:     sizeUnit,
+        Origin:        r.Origin || '',
+        pack_format:   r['Pack Formate'] || r.pack_format || '',
+        variant_name:  r['variant name'] || r.variant_en || '',
+        image:         r['image url'] || r.image || '',
+        Category:      r.Category || '',
+        Pack:          r.Pack || 1,
+        Box:           r.Box || 1,
+        price:         r.price || '',
+        price_unit:    r.price_unit || 'BD',
+        row_number:    r.row_number || r.ID || ''
       };
     });
 
-    // Clean newlines
     products.forEach(p => {
-      ['product_name','size','size_unit','Origin','color','type','pack_format','price_unit'].forEach(k => {
+      // ── CHANGE 1b: include type in cleanup ──
+      ['product_name','type','size','size_unit','Origin','color','pack_format','price_unit'].forEach(k => {
         if (p[k]) p[k] = String(p[k]).replace(/\n/g, '').trim();
       });
-      // Ensure price_unit defaults to BD
       if (!p.price_unit || p.price_unit === '') p.price_unit = 'BD';
     });
 
@@ -625,7 +627,6 @@ async function loadProducts() {
 
     show('mainContent');
     show('bottomBar');
-
     setTimeout(() => { renderCards(); updateProgress(); }, 50);
 
   } catch (err) {
@@ -667,23 +668,14 @@ function makeCard(p, i) {
     : '';
   const fbStyle = safeImage ? 'style="display:none"' : '';
 
-  // Build unit options
-  const unitOptions = UNITS.map(u =>
-    `<option value="${u}" ${p.size_unit === u ? 'selected' : ''}>${u}</option>`
-  ).join('');
-
-  // Build currency options
+  const unitOptions     = UNITS.map(u =>
+    `<option value="${u}" ${p.size_unit === u ? 'selected' : ''}>${u}</option>`).join('');
   const currencyOptions = CURRENCIES.map(c =>
-    `<option value="${c}" ${p.price_unit === c ? 'selected' : ''}>${c}</option>`
-  ).join('');
+    `<option value="${c}" ${p.price_unit === c ? 'selected' : ''}>${c}</option>`).join('');
+  const countryOptions  = COUNTRIES.map(c =>
+    `<option value="${c}" ${p.Origin === c ? 'selected' : ''}>${c}</option>`).join('');
 
-  // Build country options
-  const countryOptions = COUNTRIES.map(c =>
-    `<option value="${c}" ${p.Origin === c ? 'selected' : ''}>${c}</option>`
-  ).join('');
-
-  // Summary chips
-  const fullSize = p.size && p.size_unit ? `${p.size} ${p.size_unit}` : (p.size || '');
+  const fullSize  = p.size && p.size_unit ? `${p.size} ${p.size_unit}` : (p.size || '');
   const priceChip = p.price ? `${p.price} ${p.price_unit || 'BD'}` : '';
 
   card.innerHTML = `
@@ -713,10 +705,11 @@ function makeCard(p, i) {
           </button>
         </div>
         <div class="card-summary" id="csum-${i}">
+          ${p.type  ? `<span class="summary-chip type-chip">${esc(p.type)}</span>` : ''}
           ${p.color ? `<span class="summary-chip">${esc(p.color)}</span>` : ''}
-          ${fullSize ? `<span class="summary-chip">${esc(fullSize)}</span>` : ''}
-          ${priceChip ? `<span class="summary-chip">${esc(priceChip)}</span>` : ''}
-          ${p.Origin ? `<span class="summary-chip">${esc(p.Origin)}</span>` : ''}
+          ${fullSize   ? `<span class="summary-chip">${esc(fullSize)}</span>`   : ''}
+          ${priceChip  ? `<span class="summary-chip">${esc(priceChip)}</span>`  : ''}
+          ${p.Origin   ? `<span class="summary-chip">${esc(p.Origin)}</span>`   : ''}
         </div>
         <div class="confirmed-tag">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -730,6 +723,12 @@ function makeCard(p, i) {
         <label>Product name</label>
         <input type="text" value="${esc(p.product_name||'')}" id="pname-${i}"
           oninput="markChanged(this);products[${i}].product_name=this.value;document.getElementById('cname-${i}').textContent=this.value;updateSummary(${i})">
+      </div>
+
+      <div class="field field-full">
+        <label>Type / Variety <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--ink-4);font-size:10px;">(optional — e.g. Kinnow, Tomer, Malta, Navel)</span></label>
+        <input type="text" value="${esc(p.type||'')}" id="type-${i}" placeholder="e.g. Kinnow, Tomer, Alphonso, Navel…"
+          oninput="markChanged(this);products[${i}].type=this.value;updateSummary(${i})">
       </div>
 
       <div class="field">
@@ -821,13 +820,11 @@ function validateNumber(input) {
   if (val && !/^[\d.]+$/.test(val)) input.classList.add('invalid');
   else input.classList.remove('invalid');
 }
-
 function validatePrice(input) {
   const val = input.value.trim();
   if (val && !/^[\d.]+$/.test(val)) input.classList.add('invalid');
   else input.classList.remove('invalid');
 }
-
 function markChanged(el) { el.classList.add('changed'); }
 
 // ── Live update summary chips ─────────────────────────────────────────────
@@ -836,14 +833,16 @@ function updateSummary(i) {
   const sizeNum  = document.getElementById(`size-${i}`).value;
   const sizeUnit = document.getElementById(`unit-${i}`).value;
   const currency = document.getElementById(`currency-${i}`).value;
-  const fullSize = sizeNum && sizeUnit ? `${sizeNum} ${sizeUnit}` : (sizeNum || '');
+  const typeVal  = document.getElementById(`type-${i}`).value;    // ── CHANGE 2
+  const fullSize  = sizeNum && sizeUnit ? `${sizeNum} ${sizeUnit}` : (sizeNum || '');
   const priceChip = p.price ? `${p.price} ${currency || 'BD'}` : '';
 
   document.getElementById(`csum-${i}`).innerHTML = `
-    ${p.color    ? `<span class="summary-chip">${esc(p.color)}</span>`    : ''}
-    ${fullSize   ? `<span class="summary-chip">${esc(fullSize)}</span>`   : ''}
-    ${priceChip  ? `<span class="summary-chip">${esc(priceChip)}</span>`  : ''}
-    ${p.Origin   ? `<span class="summary-chip">${esc(p.Origin)}</span>`   : ''}
+    ${typeVal  ? `<span class="summary-chip type-chip">${esc(typeVal)}</span>`  : ''}
+    ${p.color  ? `<span class="summary-chip">${esc(p.color)}</span>`  : ''}
+    ${fullSize  ? `<span class="summary-chip">${esc(fullSize)}</span>`  : ''}
+    ${priceChip ? `<span class="summary-chip">${esc(priceChip)}</span>` : ''}
+    ${p.Origin  ? `<span class="summary-chip">${esc(p.Origin)}</span>`  : ''}
   `;
 }
 
@@ -863,8 +862,8 @@ function handleImageChange(event, i) {
       const canvas = document.createElement('canvas');
       const MAX_WIDTH = 800, MAX_HEIGHT = 800;
       let width = img.width, height = img.height;
-      if (width > height) { if (width > MAX_WIDTH) { height = height * (MAX_WIDTH / width); width = MAX_WIDTH; } }
-      else { if (height > MAX_HEIGHT) { width = width * (MAX_HEIGHT / height); height = MAX_HEIGHT; } }
+      if (width > height) { if (width > MAX_WIDTH)  { height = height * (MAX_WIDTH / width);  width = MAX_WIDTH; } }
+      else                { if (height > MAX_HEIGHT) { width  = width  * (MAX_HEIGHT / height); height = MAX_HEIGHT; } }
       canvas.width = width; canvas.height = height;
       canvas.getContext('2d').drawImage(img, 0, 0, width, height);
       const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
@@ -902,6 +901,7 @@ async function confirmProduct(i) {
   if (invalidInputs.length > 0) { showToast('Please fix validation errors first', 'error'); return; }
 
   const productName = document.getElementById(`pname-${i}`).value.trim();
+  const typeVal     = document.getElementById(`type-${i}`).value.trim();   // ── CHANGE 3
   const sizeNum     = document.getElementById(`size-${i}`).value.trim();
   const sizeUnit    = document.getElementById(`unit-${i}`).value;
   const price       = document.getElementById(`price-${i}`).value.trim();
@@ -915,6 +915,7 @@ async function confirmProduct(i) {
   if (!price)       missingFields.push('Price');
   if (!currency)    missingFields.push('Currency');
   if (!origin)      missingFields.push('Origin');
+  // type is optional — no missing check
 
   if (missingFields.length > 0) { showToast(`Missing: ${missingFields.join(', ')}`, 'error'); return; }
 
@@ -932,15 +933,14 @@ async function confirmProduct(i) {
   btn.classList.add('loading'); btn.disabled = true;
 
   try {
-    const p = products[i];
+    const p     = products[i];
     const color = document.getElementById(`color-${i}`).value.trim();
-
-    // Build full size string for variant_name display
     const fullSize = sizeNum && sizeUnit ? `${sizeNum}${sizeUnit}` : sizeNum;
 
-    // Build variant name
+    // Build variant name including type if present
     let variantParts = [];
-    if (color) variantParts.push(color);
+    if (typeVal)  variantParts.push(typeVal);
+    if (color)    variantParts.push(color);
     variantParts.push(p.product_name);
     if (fullSize) variantParts.push(fullSize);
     const variantName = variantParts.join(' ') + (p.Origin ? ` - ${p.Origin}` : '');
@@ -954,7 +954,7 @@ async function confirmProduct(i) {
         Barcode:       '',
         product_group: p.product_group || p.product_name,
         Product_Name:  p.product_name,
-        type:          p.type || '',
+        type:          typeVal || '',                  // ── CHANGE 3: send type
         Color:         color || '',
         size:          sizeNum,
         size_unit:     sizeUnit,
@@ -1016,14 +1016,15 @@ function updateProgress() {
 function showAllConfirmed() {
   hide('mainContent'); hide('bottomBar');
   document.getElementById('successList').innerHTML = products.map((p, idx) => {
-    const sizeNum  = document.getElementById(`size-${idx}`) ? document.getElementById(`size-${idx}`).value : p.size;
-    const sizeUnit = document.getElementById(`unit-${idx}`) ? document.getElementById(`unit-${idx}`).value : p.size_unit;
+    const sizeNum  = document.getElementById(`size-${idx}`)     ? document.getElementById(`size-${idx}`).value     : p.size;
+    const sizeUnit = document.getElementById(`unit-${idx}`)     ? document.getElementById(`unit-${idx}`).value     : p.size_unit;
     const currency = document.getElementById(`currency-${idx}`) ? document.getElementById(`currency-${idx}`).value : p.price_unit;
+    const typeVal  = document.getElementById(`type-${idx}`)     ? document.getElementById(`type-${idx}`).value     : p.type;
     const fullSize = sizeNum && sizeUnit ? `${sizeNum} ${sizeUnit}` : sizeNum;
     return `
     <div class="success-row">
       <div class="success-row-left">
-        <div class="success-row-name">${esc(p.product_name)}</div>
+        <div class="success-row-name">${typeVal ? esc(typeVal)+' ' : ''}${esc(p.product_name)}</div>
         <div class="success-row-detail">${fullSize?esc(fullSize):''} ${p.price?'· '+esc(p.price)+' '+(currency||'BD'):''} ${p.Origin?'· '+esc(p.Origin):''}</div>
       </div>
       <div class="success-check">
@@ -1094,6 +1095,7 @@ async function sendVoiceUpdate(i, audioBlob) {
         audio_base64: base64, audio_mime: audioBlob.type,
         current: {
           product_name: p.product_name || '',
+          type:         p.type         || '',   // ── CHANGE 4: send type in voice payload
           color:        p.color        || '',
           size:         p.size         || '',
           size_unit:    p.size_unit    || '',
@@ -1123,6 +1125,13 @@ function applyVoiceUpdates(i, result) {
     if (input) { input.value = result.product_name; input.classList.add('ai-updated', 'changed'); }
     updatedFields.push('product_name');
   }
+  // ── CHANGE 4: apply type from voice response ──
+  if (result.type && String(result.type).trim()) {
+    products[i].type = result.type;
+    const input = document.getElementById(`type-${i}`);
+    if (input) { input.value = result.type; input.classList.add('ai-updated', 'changed'); }
+    updatedFields.push('type');
+  }
   if (result.color && String(result.color).trim()) {
     products[i].color = result.color;
     const input = document.getElementById(`color-${i}`);
@@ -1130,7 +1139,6 @@ function applyVoiceUpdates(i, result) {
     updatedFields.push('color');
   }
   if (result.size && String(result.size).trim()) {
-    // Handle both "10 kg" format or separate size/size_unit
     const sizeStr = String(result.size).trim();
     const num = sizeStr.match(/^[\d.]+/)?.[0] || sizeStr;
     const sizeInput = document.getElementById(`size-${i}`);
@@ -1142,7 +1150,6 @@ function applyVoiceUpdates(i, result) {
     if (unitSelect) { unitSelect.value = result.size_unit; unitSelect.classList.add('ai-updated', 'changed'); products[i].size_unit = result.size_unit; }
     updatedFields.push('size_unit');
   } else if (result.size) {
-    // Try to extract unit from size string
     const sizeStr = String(result.size).trim();
     for (const unit of UNITS) {
       if (sizeStr.toLowerCase().includes(unit.toLowerCase())) {
