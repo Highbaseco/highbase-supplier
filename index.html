@@ -238,11 +238,7 @@ header {
   border: 1px solid var(--border-soft);
   display: inline-flex; align-items: center; gap: 4px;
 }
-/* type chip gets a distinct teal tint so it stands out */
-.summary-chip.type-chip {
-  background: #EEF9F6; color: #0D7A5F;
-  border-color: #C0E8DF;
-}
+
 
 .confirmed-tag {
   display: none; align-items: center; gap: 6px;
@@ -705,7 +701,7 @@ function makeCard(p, i) {
           </button>
         </div>
         <div class="card-summary" id="csum-${i}">
-          ${p.type  ? `<span class="summary-chip type-chip">${esc(p.type)}</span>` : ''}
+          ${p.type  ? `<span class="summary-chip">${esc(p.type)}</span>` : ''}
           ${p.color ? `<span class="summary-chip">${esc(p.color)}</span>` : ''}
           ${fullSize   ? `<span class="summary-chip">${esc(fullSize)}</span>`   : ''}
           ${priceChip  ? `<span class="summary-chip">${esc(priceChip)}</span>`  : ''}
@@ -728,7 +724,7 @@ function makeCard(p, i) {
       <div class="field field-full">
         <label>Type / Variety <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--ink-4);font-size:10px;">(optional — e.g. Kinnow, Tomer, Malta, Navel)</span></label>
         <input type="text" value="${esc(p.type||'')}" id="type-${i}" placeholder="e.g. Kinnow, Tomer, Alphonso, Navel…"
-          oninput="markChanged(this);products[${i}].type=this.value;updateSummary(${i})">
+          oninput="products[${i}].type=this.value;updateSummary(${i})">
       </div>
 
       <div class="field">
@@ -838,7 +834,7 @@ function updateSummary(i) {
   const priceChip = p.price ? `${p.price} ${currency || 'BD'}` : '';
 
   document.getElementById(`csum-${i}`).innerHTML = `
-    ${typeVal  ? `<span class="summary-chip type-chip">${esc(typeVal)}</span>`  : ''}
+    ${typeVal  ? `<span class="summary-chip">${esc(typeVal)}</span>`  : ''}
     ${p.color  ? `<span class="summary-chip">${esc(p.color)}</span>`  : ''}
     ${fullSize  ? `<span class="summary-chip">${esc(fullSize)}</span>`  : ''}
     ${priceChip ? `<span class="summary-chip">${esc(priceChip)}</span>` : ''}
