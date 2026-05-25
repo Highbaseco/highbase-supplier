@@ -547,21 +547,65 @@ let products  = [];
 let confirmed = new Set();
 let chatId    = null;
 let branchId  = null;
+let token     = null;
+
+// ── JWT Decode ────────────────────────────────────────────────────────────
+function decodeJWT(raw) {
+  try {
+    const parts = raw.split('.');
+    if (parts.length !== 3) return null;
+    // base64url → base64
+    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    return JSON.parse(atob(base64));
+  } catch (e) {
+    return null;
+  }
+}
 
 // ── Boot ──────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
-  chatId   = params.get('chat_id');
-  branchId = params.get('branch_id');
-  if (!chatId)   { showError('No supplier ID found. Please ask Highbase to resend the link.'); return; }
-  if (!branchId) { showError('No supplier Branch ID found. Please ask Highbase to resend the link.'); return; }
+  token = params.get('id');
+
+  // Must have token
+  if (!token) {
+    showError('No access link found. Please ask Highbase to resend the link.');
+    return;
+  }
+
+  // Decode payload
+  const payload = decodeJWT(token);
+  if (!payload) {
+    showError('Invalid access link. Please ask Highbase to resend the link.');
+    return;
+  }
+
+  // Check expiry — link valid for 30 minutes only
+  const nowSec     = Math.floor(Date.now() / 1000);
+  const ageMinutes = Math.floor((nowSec - payload.iat) / 60);
+  if (ageMinutes > 30) {
+    showError(`This link has expired (${ageMinutes} minutes old). Please send "link" on WhatsApp to get a new one.`);
+    return;
+  }
+
+  // Extract fields from JWT payload
+  chatId   = String(payload.PhoneNumber || '');
+  branchId = String(payload.BranchID    || '');
+
+  if (!chatId) {
+    showError('Could not read supplier ID from link. Please ask Highbase to resend the link.');
+    return;
+  }
+
   loadProducts();
 });
 
 // ── Load ──────────────────────────────────────────────────────────────────
 async function loadProducts() {
   try {
-    const res  = await fetch(`${WEBHOOK_GET}?chat_id=${encodeURIComponent(chatId)}`);
+    const res  = await fetch(`${WEBHOOK_GET}?chat_id=${encodeURIComponent(chatId)}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
     const data = await res.json();
     const rows = Array.isArray(data) ? data : [data];
 
@@ -943,7 +987,10 @@ async function confirmProduct(i) {
 
     const res = await fetch(WEBHOOK_POST, {
       method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': `Bearer ${token}`
+      },
       body:    JSON.stringify({
         brand_id:      p.brand_id || p.barnd_id || '',
         Brand:         p.Brand || '',
@@ -1085,7 +1132,10 @@ async function sendVoiceUpdate(i, audioBlob) {
     const p = products[i];
     const base64 = await blobToBase64(audioBlob);
     const res = await fetch(WEBHOOK_VOICE, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: {
+        'Content-Type':  'application/json',
+        'Authorization': `Bearer ${token}`
+      },
       body: JSON.stringify({
         chat_id: chatId, branch_id: branchId, row_number: p.row_number,
         audio_base64: base64, audio_mime: audioBlob.type,
