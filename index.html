@@ -919,11 +919,13 @@ function applyVoiceUpdates(i, result) {
     const sel = document.getElementById('origin-' + i);
     if (sel) {
       for (let j = 0; j < sel.options.length; j++) {
-        if (sel.options[j].value.toLowerCase() === ov.toLowerCase() ||
-            sel.options[j].value.toLowerCase().includes(ov.toLowerCase()) ||
-            ov.toLowerCase().includes(sel.options[j].value.toLowerCase())) {
+        const optVal = sel.options[j].value;
+        if (!optVal) continue; // skip the blank "Select country" option
+        if (optVal.toLowerCase() === ov.toLowerCase() ||
+            optVal.toLowerCase().includes(ov.toLowerCase()) ||
+            ov.toLowerCase().includes(optVal.toLowerCase())) {
           sel.selectedIndex = j; sel.classList.add('ai-updated','changed');
-          products[i].Origin = sel.options[j].value; updated.push('Origin'); break;
+          products[i].Origin = optVal; updated.push('Origin'); break;
         }
       }
     }
