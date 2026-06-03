@@ -329,6 +329,7 @@ let branchId       = null;
 let branchSlug     = null;
 let branchCurrency = null;
 let token          = null;
+let expiredPayload = null; // stored when link is expired, used for send_new_link
 
 // ── JWT Decode ────────────────────────────────────────────────────────────
 function decodeJWT(raw) {
@@ -354,7 +355,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const ageMinutes = Math.floor((nowSec - payload.iat) / 60);
   if (ageMinutes > 30) {
     // Extract phone from expired token so we can request a new link
-    chatId = String(payload.PhoneNumber || '');
+    chatId         = String(payload.PhoneNumber || '');
+    expiredPayload = payload;
     showError('This link has expired (' + ageMinutes + ' minutes old). Click below to get a new one.');
     document.getElementById('newLinkBtn').style.display = 'flex';
     return;
@@ -644,7 +646,13 @@ async function requestNewLink() {
     const res = await fetch(WEBHOOK_NEW_LINK, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ chat_id: chatId })
+      body:    JSON.stringify({
+        BranchID:       String(expiredPayload.BranchID       || ''),
+        PhoneNumber:    String(expiredPayload.PhoneNumber     || ''),
+        BranchNumber:   String(expiredPayload.BranchNumber    || ''),
+        BranchSlug:     String(expiredPayload.BranchSlug      || ''),
+        BranchCurrency: String(expiredPayload.BranchCurrency  || ''),
+      })
     });
     if (!res.ok) throw new Error(res.status);
     btnText.textContent = 'Link sent!';
