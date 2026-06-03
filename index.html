@@ -189,7 +189,7 @@ header { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.92
 #toast.info    { background: var(--ink);     color: white; }
 
 /* ── Action Bar ── */
-.action-bar { max-width: 1280px; margin: 0 auto; padding: 20px 20px 0; display: none; animation: fadeUp .4s ease both; }
+.action-bar { max-width: 1280px; margin: 0 auto; padding: 20px 20px 20px; display: none; animation: fadeUp .4s ease both; }
 .action-bar.show { display: block; }
 .action-bar-label { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 10px; }
 .action-btns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
@@ -240,6 +240,28 @@ header { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.92
   </div>
 </header>
 
+<div class="action-bar" id="actionBar">
+    <div class="action-bar-label">Confirmation page — your submitted products</div>
+    <div class="action-btns">
+      <button class="action-btn copy-btn" onclick="copyStoreLink()">
+        <div class="action-btn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></div>
+        <div class="action-btn-text"><div class="action-btn-title">Share my local store</div><div class="action-btn-sub">Copy shareable link</div></div>
+      </button>
+      <a class="action-btn" id="viewStoreBtn" href="#" target="_blank" rel="noopener">
+        <div class="action-btn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
+        <div class="action-btn-text"><div class="action-btn-title">View my local store</div><div class="action-btn-sub">Branch storefront page</div></div>
+      </a>
+      <a class="action-btn" id="stockBtn" href="#" target="_blank" rel="noopener">
+        <div class="action-btn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></div>
+        <div class="action-btn-text"><div class="action-btn-title">Manage my HB stock</div><div class="action-btn-sub">Branch stock edit page</div></div>
+      </a>
+      <a class="action-btn" id="ordersBtn" href="#" target="_blank" rel="noopener">
+        <div class="action-btn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+        <div class="action-btn-text"><div class="action-btn-title">Manage my HB orders</div><div class="action-btn-sub">Branch order mgmt page</div></div>
+      </a>
+    </div>
+</div>
+
 <div id="toast"></div>
 
 <div id="loadingScreen"><div class="loader"></div><p>Loading your products...</p></div>
@@ -262,28 +284,6 @@ header { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.92
   <div class="state-icon success-icon-big"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
   <h2>All confirmed!</h2><p>Your products have been saved to Highbase successfully.</p>
   <div class="success-list" id="successList"></div>
-</div>
-
-<div class="action-bar" id="actionBar">
-    <div class="action-bar-label">Confirmation page — your submitted products</div>
-    <div class="action-btns">
-      <button class="action-btn copy-btn" onclick="copyStoreLink()">
-        <div class="action-btn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></div>
-        <div class="action-btn-text"><div class="action-btn-title">Share my local store</div><div class="action-btn-sub">Copy shareable link</div></div>
-      </button>
-      <a class="action-btn" id="viewStoreBtn" href="#" target="_blank" rel="noopener">
-        <div class="action-btn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
-        <div class="action-btn-text"><div class="action-btn-title">View my local store</div><div class="action-btn-sub">Branch storefront page</div></div>
-      </a>
-      <a class="action-btn" id="stockBtn" href="#" target="_blank" rel="noopener">
-        <div class="action-btn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></div>
-        <div class="action-btn-text"><div class="action-btn-title">Manage my HB stock</div><div class="action-btn-sub">Branch stock edit page</div></div>
-      </a>
-      <a class="action-btn" id="ordersBtn" href="#" target="_blank" rel="noopener">
-        <div class="action-btn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
-        <div class="action-btn-text"><div class="action-btn-title">Manage my HB orders</div><div class="action-btn-sub">Branch order mgmt page</div></div>
-      </a>
-    </div>
 </div>
 
 <div id="mainContent" style="display:none;">
