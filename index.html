@@ -399,6 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ── Load ──────────────────────────────────────────────────────────────────
 async function loadProducts() {
+  isProcessing = false; // always reset lock when page reloads
   try {
     const res  = await fetch(WEBHOOK_GET + '?chat_id=' + encodeURIComponent(chatId), {
       headers: { 'Authorization': 'Bearer ' + token }
@@ -471,6 +472,7 @@ async function loadProducts() {
 
   } catch (err) {
     console.error('Load error:', err);
+    isProcessing = false; // always unlock on any failure
     showError('Could not connect: ' + (err.message || err));
   }
 }
@@ -664,9 +666,13 @@ async function deleteProduct(i) {
     console.warn('Delete webhook failed (removing from UI anyway):', err);
   }
 
-  // Remove from UI — reload fresh from server
-  showToast('Product removed', 'info');
-  await loadProducts();
+  try {
+    showToast('Product removed', 'info');
+    await loadProducts();
+  } catch (err) {
+    unlockUI();
+    showToast('Could not refresh. Please reload the page.', 'error');
+  }
 }
 
 async function requestNewLink() {
