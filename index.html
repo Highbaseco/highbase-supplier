@@ -441,7 +441,45 @@ header {
 #toast.error   { background: var(--danger); color: white; }
 #toast.info    { background: var(--ink); color: white; }
 
-/* ── Animations ─────────────────────────────────────────────────────────── */
+/* ── Action Bar ─────────────────────────────────────────────────────────── */
+.action-bar {
+  max-width: 1280px; margin: 0 auto;
+  padding: 20px 20px 0;
+  display: none;
+  animation: fadeUp .4s ease both;
+}
+.action-bar.show { display: block; }
+.action-bar-label {
+  font-size: 11px; font-weight: 600; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--ink-4); margin-bottom: 10px;
+}
+.action-btns {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+@media (max-width: 700px) { .action-btns { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 400px) { .action-btns { grid-template-columns: 1fr; } }
+
+.action-btn {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r-sm); padding: 12px 14px;
+  cursor: pointer; transition: all .2s; text-decoration: none;
+  text-align: left;
+}
+.action-btn:hover { border-color: var(--primary-soft); box-shadow: var(--shadow-sm); background: var(--primary-lt); }
+.action-btn:active { transform: scale(.98); }
+.action-btn.copy-btn:hover { border-color: #16A34A; background: var(--success-lt); }
+.action-btn-icon {
+  width: 34px; height: 34px; border-radius: var(--r-sm); flex-shrink: 0;
+  background: var(--primary-lt); color: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+}
+.copy-btn .action-btn-icon { background: var(--success-lt); color: var(--success); }
+.action-btn-text { min-width: 0; }
+.action-btn-title { font-size: 13px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.action-btn-sub   { font-size: 11px; color: var(--ink-4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes pop { from { opacity: 0; transform: scale(.5); } to { opacity: 1; transform: scale(1); } }
@@ -515,6 +553,53 @@ header {
       </div>
     </div>
   </div>
+  <div class="action-bar" id="actionBar">
+    <div class="action-bar-label">Confirmation page — your submitted products</div>
+    <div class="action-btns">
+
+      <button class="action-btn copy-btn" onclick="copyStoreLink()">
+        <div class="action-btn-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        </div>
+        <div class="action-btn-text">
+          <div class="action-btn-title">Share my local store</div>
+          <div class="action-btn-sub">Copy shareable link</div>
+        </div>
+      </button>
+
+      <a class="action-btn" id="viewStoreBtn" href="#" target="_blank" rel="noopener">
+        <div class="action-btn-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <div class="action-btn-text">
+          <div class="action-btn-title">View my local store</div>
+          <div class="action-btn-sub">Branch storefront page</div>
+        </div>
+      </a>
+
+      <a class="action-btn" id="stockBtn" href="#" target="_blank" rel="noopener">
+        <div class="action-btn-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+        </div>
+        <div class="action-btn-text">
+          <div class="action-btn-title">Manage my HB stock</div>
+          <div class="action-btn-sub">Branch stock edit page</div>
+        </div>
+      </a>
+
+      <a class="action-btn" id="ordersBtn" href="#" target="_blank" rel="noopener">
+        <div class="action-btn-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        </div>
+        <div class="action-btn-text">
+          <div class="action-btn-title">Manage my HB orders</div>
+          <div class="action-btn-sub">Branch order mgmt page</div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
   <div class="cards-wrap" id="cardsList"></div>
 </div>
 
@@ -543,11 +628,12 @@ const CURRENCIES = ['BD', 'USD', 'EGP', 'INR', 'SAR', 'AED'];
 const COUNTRIES = ['Egypt', 'India', 'Saudi Arabia', 'UAE', 'Turkey', 'Mexico', 'Jordan', 'Morocco', 'Spain', 'Kuwait', 'Bahrain', 'Oman', 'Qatar', 'Iran', 'Pakistan', 'Indonesia', 'USA', 'Netherlands', 'Peru', 'Chile', 'Brazil', 'China', 'Thailand', 'Vietnam', 'Philippines', 'Lebanon', 'Syria', 'Iraq', 'Yemen', 'Palestine', 'Tunisia', 'Algeria', 'Libya', 'Sudan', 'Somalia', 'Kenya', 'Tanzania', 'Uganda', 'Ethiopia', 'South Africa', 'Nigeria', 'Ghana', 'Ivory Coast', 'Senegal', 'Mali', 'Cameroon', 'Zimbabwe', 'Australia', 'New Zealand', 'Japan', 'South Korea', 'Malaysia', 'Singapore', 'Sri Lanka', 'Bangladesh', 'Nepal', 'Afghanistan', 'Kazakhstan', 'Uzbekistan', 'Turkmenistan', 'Azerbaijan', 'Armenia', 'Georgia', 'Russia', 'Ukraine', 'Poland', 'Germany', 'France', 'Italy', 'UK', 'Ireland', 'Portugal', 'Greece', 'Cyprus', 'Malta', 'Belgium', 'Switzerland', 'Austria', 'Sweden', 'Norway', 'Denmark', 'Finland', 'Iceland', 'Canada', 'Argentina', 'Colombia', 'Ecuador', 'Venezuela', 'Bolivia', 'Paraguay', 'Uruguay', 'Costa Rica', 'Panama', 'Guatemala', 'Honduras', 'Nicaragua', 'El Salvador', 'Dominican Republic', 'Haiti', 'Jamaica', 'Cuba', 'Puerto Rico'];
 
 // ── State ─────────────────────────────────────────────────────────────────
-let products  = [];
-let confirmed = new Set();
-let chatId    = null;
-let branchId  = null;
-let token     = null;
+let products    = [];
+let confirmed   = new Set();
+let chatId      = null;
+let branchId    = null;
+let branchSlug  = null;
+let token       = null;
 
 // ── JWT Decode ────────────────────────────────────────────────────────────
 function decodeJWT(raw) {
@@ -589,8 +675,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Extract fields from JWT payload
-  chatId   = String(payload.PhoneNumber || '');
-  branchId = String(payload.BranchID    || '');
+  chatId      = String(payload.PhoneNumber  || '');
+  branchId    = String(payload.BranchID     || '');
+  branchSlug  = String(payload.BranchSlug   || '');
+  branchCurrency = = String(payload.BranchCurrency || '');
+  
 
   if (!chatId) {
     showError('Could not read supplier ID from link. Please ask Highbase to resend the link.');
@@ -657,6 +746,10 @@ async function loadProducts() {
         if (p[k]) p[k] = String(p[k]).replace(/\n/g, '').trim();
       });
       if (!p.price_unit || p.price_unit === '') p.price_unit = 'BD';
+      // Format price to 3 decimal places
+      if (p.price && !isNaN(parseFloat(p.price))) {
+        p.price = parseFloat(p.price).toFixed(3);
+      }
     });
 
     hide('loadingScreen');
@@ -667,12 +760,42 @@ async function loadProducts() {
 
     show('mainContent');
     show('bottomBar');
+    initActionBar();
     setTimeout(() => { renderCards(); updateProgress(); }, 50);
 
   } catch (err) {
     console.error('Load error:', err);
     showError('Could not connect: ' + (err.message || err));
   }
+}
+
+// ── Action Bar ────────────────────────────────────────────────────────────
+function initActionBar() {
+  if (!branchSlug) return;
+  const base = 'https://staging.highbasemarket.com';
+
+  document.getElementById('viewStoreBtn').href  = `${base}/storefront/stores/${branchSlug}`;
+  document.getElementById('stockBtn').href       = `${base}/account/branches/${branchSlug}?tab=stocks`;
+  document.getElementById('ordersBtn').href      = `${base}/account/branches/${branchSlug}?tab=orders`;
+
+  document.getElementById('actionBar').classList.add('show');
+}
+
+function copyStoreLink() {
+  if (!branchSlug) return;
+  const link = `https://staging.highbasemarket.com/sh/${branchSlug}`;
+  navigator.clipboard.writeText(link)
+    .then(() => showToast('Store link copied!', 'success'))
+    .catch(() => {
+      // fallback for older browsers
+      const el = document.createElement('textarea');
+      el.value = link;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      showToast('Store link copied!', 'success');
+    });
 }
 
 // ── Convert Google Drive URLs ─────────────────────────────────────────────
@@ -1010,7 +1133,7 @@ async function confirmProduct(i) {
         Pack:          p.Pack || 1,
         Box:           p.Box || 1,
         price:         price,
-        price_unit:    currency || 'BD',
+        price_unit:    currency || branchCurrency,
         chat_id:       chatId,
         branch_id:     branchId,
         row_number:    p.row_number,
