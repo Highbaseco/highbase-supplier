@@ -514,7 +514,7 @@ function initActionBar() {
 
 function copyStoreLink() {
   if (!branchSlug) return;
-  const link = 'https://staging.highbasemarket.com/sh/' + branchSlug;
+  const link = 'https://staging.highbasemarket.com/storefront/stores/' + branchSlug;
   navigator.clipboard.writeText(link)
     .then(() => showToast('Store link copied!', 'success'))
     .catch(() => {
