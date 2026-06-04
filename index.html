@@ -558,9 +558,7 @@ function makeCard(p, i) {
 
   const unitOptions = UNITS.map(u => '<option value="' + u + '" ' + (p.size_unit === u ? 'selected' : '') + '>' + u + '</option>').join('');
 
-  const allowedCurrencies = [branchCurrency || 'BD'];
-  if (p.price_unit && p.price_unit !== (branchCurrency || 'BD')) allowedCurrencies.push(p.price_unit);
-  const currencyOptions = allowedCurrencies.map(c => '<option value="' + c + '" ' + (p.price_unit === c ? 'selected' : '') + '>' + c + '</option>').join('');
+  const activeCurrency = branchCurrency || 'BD';
 
   const countryOptions = COUNTRIES.map(c => '<option value="' + c + '" ' + (p.Origin === c ? 'selected' : '') + '>' + c + '</option>').join('');
 
@@ -599,7 +597,7 @@ function makeCard(p, i) {
       '<div class="field"><label>Size (number only)</label><input type="text" value="' + esc(p.size||'') + '" id="size-' + i + '" placeholder="e.g. 10" oninput="validateNumber(this);markChanged(this);products[' + i + '].size=this.value;updateSummary(' + i + ')"><span class="field-error">Numbers only</span></div>' +
       '<div class="field"><label>Unit</label><select id="unit-' + i + '" onchange="markChanged(this);products[' + i + '].size_unit=this.value;updateSummary(' + i + ')"><option value="">Select unit</option>' + unitOptions + '</select></div>' +
       '<div class="field"><label>Price</label><input type="text" value="' + esc(p.price||'') + '" id="price-' + i + '" placeholder="e.g. 5.000" oninput="validatePrice(this);markChanged(this);products[' + i + '].price=this.value;updateSummary(' + i + ')"><span class="field-error">Numbers and . only</span></div>' +
-      '<div class="field"><label>Currency</label><select id="currency-' + i + '" onchange="markChanged(this);products[' + i + '].price_unit=this.value;updateSummary(' + i + ')">' + currencyOptions + '</select></div>' +
+      '<div class="field"><label>Currency</label><div id="currency-' + i + '" style="font-family:var(--font-body);font-size:14px;font-weight:600;color:var(--ink);background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;width:100%;">' + esc(activeCurrency) + '</div></div>' +
       '<div class="field field-full"><label>Origin country</label><select id="origin-' + i + '" onchange="markChanged(this);products[' + i + '].Origin=this.value;updateSummary(' + i + ')"><option value="">Select country</option>' + countryOptions + '</select></div>' +
       '<div class="field field-full"><label>Product settings</label>' +
         '<div class="card-toggles">' +
@@ -628,7 +626,7 @@ function updateSummary(i) {
   const p        = products[i];
   const sizeNum  = document.getElementById('size-' + i).value;
   const sizeUnit = document.getElementById('unit-' + i).value;
-  const currency = document.getElementById('currency-' + i).value;
+  const currEl = document.getElementById('currency-' + i); const currency = currEl ? (currEl.value !== undefined ? currEl.value : currEl.textContent.trim()) : (branchCurrency || 'BD');
   const typeVal  = document.getElementById('type-' + i).value;
   const fullSize  = sizeNum && sizeUnit ? sizeNum + ' ' + sizeUnit : sizeNum;
   const priceChip = p.price ? p.price + ' ' + (currency || branchCurrency || 'BD') : '';
@@ -674,10 +672,9 @@ function handleImageChange(event, i) {
 async function deleteProduct(i) {
   if (isProcessing) { showToast('Please wait, another action is in progress', 'info'); return; }
   if (confirmed.has(i)) { showToast('Cannot delete confirmed product', 'error'); return; }
-  lockUI();
   const p   = products[i];
   const btn = document.querySelector('#card-' + i + ' .btn-delete');
-  if (btn) { btn.disabled = true; btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'; }
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.45'; }
 
   try {
     await fetch(WEBHOOK_DELETE, {
@@ -695,12 +692,17 @@ async function deleteProduct(i) {
     console.warn('Delete webhook failed (removing from UI anyway):', err);
   }
 
-  try {
-    showToast('Product removed', 'info');
-    await loadProducts();
-  } catch (err) {
-    unlockUI();
-    showToast('Could not refresh. Please reload the page.', 'error');
+  // Remove card from DOM instantly — no reload needed
+  const cardEl = document.getElementById('card-' + i);
+  if (cardEl) cardEl.remove();
+  showToast('Product removed', 'info');
+  updateProgress();
+  unlockUI();
+  if (document.getElementById('cardsList').children.length === 0) {
+    document.querySelector('#emptyScreen h2').textContent = 'No products to review';
+    document.querySelector('#emptyScreen p').textContent  = 'All confirmed! Send more products via WhatsApp to add them here.';
+    hide('mainContent'); hide('bottomBar');
+    show('emptyScreen');
   }
 }
 
@@ -743,7 +745,7 @@ async function confirmProduct(i, skipReload) {
   const sizeNum     = document.getElementById('size-' + i).value.trim();
   const sizeUnit    = document.getElementById('unit-' + i).value;
   const price       = document.getElementById('price-' + i).value.trim();
-  const currency    = document.getElementById('currency-' + i).value;
+  const currDiv     = document.getElementById('currency-' + i); const currency = currDiv ? (currDiv.value !== undefined && currDiv.value !== '' ? currDiv.value : currDiv.textContent.trim()) : (branchCurrency || 'BD');
   const origin      = document.getElementById('origin-' + i).value;
 
   const missing = [];
@@ -809,15 +811,29 @@ async function confirmProduct(i, skipReload) {
     const resData     = await res.json();
     const productName = p.product_name;
     if (resData.manual) {
-      // Product went to manual path — lock card in pending state, don't reload
+      // Product went to manual path — lock card in pending state
       const cardEl = document.getElementById('card-' + i);
       if (cardEl) cardEl.classList.add('pending');
       showToast(productName + ' received — team will add shortly', 'info');
       btn.classList.remove('loading');
-      if (!skipReload) unlockUI();
+      if (!skipReload) { updateProgress(); unlockUI(); }
     } else {
       showToast(productName + ' saved', 'success');
-      if (!skipReload) await loadProducts();
+      if (!skipReload) {
+        // Remove card from DOM instantly — no reload needed
+        const cardEl = document.getElementById('card-' + i);
+        if (cardEl) cardEl.remove();
+        confirmed.add(i);
+        updateProgress();
+        unlockUI();
+        // If all gone, show empty state
+        if (document.getElementById('cardsList').children.length === 0) {
+          document.querySelector('#emptyScreen h2').textContent = 'No products to review';
+          document.querySelector('#emptyScreen p').textContent  = 'All confirmed! Send more products via WhatsApp to add them here.';
+          hide('mainContent'); hide('bottomBar');
+          show('emptyScreen');
+        }
+      }
     }
 
   } catch (err) {
@@ -836,7 +852,16 @@ async function confirmAll() {
   const btn = document.getElementById('confirmAllBtn');
   btn.disabled = true; btn.innerHTML = 'Saving...';
   for (const i of pending) { await confirmProduct(i, true); await new Promise(r => setTimeout(r, 300)); }
-  await loadProducts(); // single reload — unlockUI() called at top of loadProducts()
+  // No reload — cards already removed from DOM by confirmProduct(i, true)
+  // Update progress once at the end and unlock
+  updateProgress();
+  unlockUI();
+  if (document.getElementById('cardsList').children.length === 0) {
+    document.querySelector('#emptyScreen h2').textContent = 'No products to review';
+    document.querySelector('#emptyScreen p').textContent  = 'All confirmed! Send more products via WhatsApp to add them here.';
+    hide('mainContent'); hide('bottomBar');
+    show('emptyScreen');
+  }
 }
 
 function updateProgress() {
@@ -855,7 +880,7 @@ function showAllConfirmed() {
   document.getElementById('successList').innerHTML = products.map((p, idx) => {
     const sn  = document.getElementById('size-'     + idx) ? document.getElementById('size-'     + idx).value : p.size;
     const su  = document.getElementById('unit-'     + idx) ? document.getElementById('unit-'     + idx).value : p.size_unit;
-    const cur = document.getElementById('currency-' + idx) ? document.getElementById('currency-' + idx).value : p.price_unit;
+    const curEl = document.getElementById('currency-' + idx); const cur = curEl ? (curEl.value || curEl.textContent.trim() || p.price_unit) : p.price_unit;
     const tv  = document.getElementById('type-'     + idx) ? document.getElementById('type-'     + idx).value : p.type;
     const fs  = sn && su ? sn + ' ' + su : sn;
     return '<div class="success-row"><div class="success-row-left"><div class="success-row-name">' + (tv ? esc(tv)+' ' : '') + esc(p.product_name) + '</div><div class="success-row-detail">' + (fs ? esc(fs) : '') + (p.price ? ' &middot; ' + esc(p.price) + ' ' + (cur || branchCurrency || 'BD') : '') + (p.Origin ? ' &middot; ' + esc(p.Origin) : '') + '</div></div><div class="success-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div></div>';
@@ -963,11 +988,7 @@ function applyVoiceUpdates(i, result) {
     if (elUnit) { elUnit.value = result.size_unit; elUnit.classList.add('ai-updated','changed'); products[i].size_unit = result.size_unit; updated.push('size_unit'); }
   }
   set('price', 'price');
-  if (result.price_unit && String(result.price_unit).trim()) {
-    products[i].price_unit = result.price_unit;
-    const el = document.getElementById('currency-' + i);
-    if (el) { el.value = result.price_unit; el.classList.add('ai-updated','changed'); updated.push('price_unit'); }
-  }
+  // currency is static (branchCurrency) — voice cannot override it
   if (result.Origin && String(result.Origin).trim()) {
     const ov  = String(result.Origin).trim();
     const sel = document.getElementById('origin-' + i);
