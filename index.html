@@ -505,16 +505,16 @@ async function loadProducts() {
 // ── Action Bar ────────────────────────────────────────────────────────────
 function initActionBar() {
   if (!branchSlug) return;
-  const base = 'https://highbasemarket.com';
+  const base = 'https://staging.highbasemarket.com';
   document.getElementById('viewStoreBtn').href = base + '/storefront/stores/' + branchSlug;
-  document.getElementById('stockBtn').href     = base + '/account/branches/' + branchSlug + '?tab=stocks';
-  document.getElementById('ordersBtn').href    = base + '/account/branches/' + branchSlug + '?tab=orders';
+  document.getElementById('stockBtn').href     = base + '/account/stocks' ;
+  document.getElementById('ordersBtn').href    = base + '/account/orders' ;
   document.getElementById('actionBar').classList.add('show');
 }
 
 function copyStoreLink() {
   if (!branchSlug) return;
-  const link = 'https://highbasemarket.com/storefront/stores/' + branchSlug;
+  const link = 'https://staging.highbasemarket.com/storefront/stores/' + branchSlug;
   navigator.clipboard.writeText(link)
     .then(() => showToast('Store link copied!', 'success'))
     .catch(() => {
