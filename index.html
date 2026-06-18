@@ -776,11 +776,14 @@ async function confirmProduct(i, skipReload) {
     const color = document.getElementById('color-' + i).value.trim();
     const fullSize = sizeNum && sizeUnit ? sizeNum + sizeUnit : sizeNum;
     const parts = [];
-    if (typeVal) parts.push(typeVal);
-    if (color)   parts.push(color);
+    if (color)    parts.push(color);
     parts.push(p.product_name);
+    if (typeVal)  parts.push(typeVal);
     if (fullSize) parts.push(fullSize);
-    const variantName = parts.join(' ') + (p.Origin ? ' - ' + p.Origin : '');
+    const afterDash = [];
+    if (p.pack_format) afterDash.push(p.pack_format);
+    if (p.Origin)      afterDash.push(p.Origin);
+    const variantName = parts.join(' ') + (afterDash.length ? ' - ' + afterDash.join(' ') : '');
 
     const res = await fetch(WEBHOOK_POST, {
       method: 'POST',
