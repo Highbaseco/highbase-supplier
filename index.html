@@ -452,7 +452,7 @@ async function loadProducts() {
         color:         r.Color || r.color || '',
         size:          sizeNum, size_unit: sizeUnit,
         Origin:        r.Origin || '',
-        pack_format:   r['Pack Formate'] || r.pack_format || '',
+        pack_format:   r['Pack Formate'] || r['Pack Format'] || r.pack_format || r.Pack_Formate || r.Pack_Format || '',
         variant_name:  r['variant name'] || r.variant_en || '',
         image:         r['image url'] || r.image || '',
         Category:      r.Category || '',
