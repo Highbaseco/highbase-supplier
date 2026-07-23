@@ -1,0 +1,36 @@
+name: Deploy To Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.VPS_SSH_PORT || 22 }}
+          script: |
+            cat > /tmp/deploy.sh << DEPLOY_SCRIPT
+
+            set -x
+            set -e
+
+            # ── cd into the project directory ──────────────────────────────
+            cd /var/www/highbase-supplier
+
+            # ── Pull the latest code ───────────────────────────────────────
+            git restore .
+            git pull origin main
+
+            DEPLOY_SCRIPT
+
+            chmod +x /tmp/deploy.sh
+            su - deployer -c "bash /tmp/deploy.sh"
